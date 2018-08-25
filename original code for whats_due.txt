@@ -1,0 +1,109 @@
+import pickle
+with open("serial_bills.pickle", "rb") as begDic:
+    view_all_bills = pickle.load(begDic)
+    bills = view_all_bills
+    # print(bills)
+
+# paid_bills = {}
+
+
+# I cannot add a bill, but it rewrites whats in the dictionary
+def add(add_bill, cost):
+    # print(type(bill), type(cost))
+    bills.update({add_bill: cost})
+    file_name = "serial_bills.pickle"
+    with open(file_name, "wb") as bills2pay:
+        pickle.dump(bills, bills2pay)
+        print("These are your bills: ", bills)
+
+
+# only returns one "none found", and then errors, but it does loop until it finds a value = 0
+def delete(ans):
+    print(bills)
+    # values = bills.values()
+    # for item in values:
+    #     if item <= 0:
+    del bills[ans]
+    file_name = "serial_bills.pickle"
+    with open(file_name, "wb") as bills2pay:
+        pickle.dump(bills, bills2pay)
+        print("These are your bills: ", bills)
+
+    #         print(bills)
+    #     else:
+    #         print("none found")
+
+
+def pay(ans, current_balance):
+    try:
+        # # old code
+        #
+        # with open("serial_bills.pickle", "rb") as about2pay:
+        #     bothFromDict = pickle.load(about2pay)
+        #     print(bothFromDict)
+        #     keyMaster = bothFromDict.keys()
+        # # keyMaster is bills
+            for item in bills:
+                if ans == item:
+                    cost_of_bill = bills[ans]
+                    print("Your bill costs: $%.2f" % cost_of_bill)
+                    # make this a nested function (rm bill():?) #
+                    # ans2 = float(input("How much can you pay?\n"))
+                    # paid_bill = cost_of_bill - ans2
+                    current_balance -= 50
+                    # what to do if neg num?
+                    if current_balance <= 0:
+                        # good effect but did not work
+                        delete(ans)
+                        # encounters runtime error due to dictionary change in size
+                        # # bills was bothFromDict
+                        # bills.pop(ans)
+                    elif current_balance >= 0:
+                        print(current_balance)
+                else:
+                    print('this')
+    except FileNotFoundError:
+        print("whoops")
+
+
+def view():
+    try:
+        # with open("serial_bills.pickle", "rb") as what_I_owe:
+        #     view_bills = pickle.load(what_I_owe)
+        #     print(view_bills)
+        print(bills)
+    except FileNotFoundError:
+        return {}
+
+
+def main():
+    current_balance = int(input("How much money is in your account right now?\n"))
+    # print("This is your current balance: $%.2f" % currentBalance)
+    teller = input("Would you like to add a new bill, pay an existing, delete, or view your bills?\n")
+    if teller.upper() == "A":
+        add_bill = input("What bill do you need to add?\n")
+        cost = float(input("How much is due?\n"))
+        add(add_bill, cost)
+    elif teller.upper() == "P":
+        ans = input("What bill do you want to pay?\n")
+        pay(ans, current_balance)
+    elif teller.upper() == "D":
+        delete()
+    else:
+        print("This is your current balance: $%.2f" % current_balance)
+        print("And these are your bills:")
+        view()
+
+
+main()
+
+"""
+
+# TODO: make program sub all dict values from current_balance
+# TODO: figure out how to remove items from dict
+
+# TODO: (long term) find a way to visualize the data
+# TODO: (long term) make this easy to swap between users and their bills
+# TODO: (long term) incorporate a calendar
+
+"""
