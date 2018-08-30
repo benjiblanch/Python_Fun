@@ -13,75 +13,64 @@ with open("serial_bills.pickle", "rb") as startDict:
 current_balance = int(input("How much money is in your account right now?\n"))
 
 
+def save():
+    file_name = "serial_bills.pickle"
+    with open(file_name, "wb") as bills2pay:
+        pickle.dump(bills, bills2pay)
+
+
 # I cannot add a bill, but it does rewrite whats in the dictionary
 def add(add_bill, cost):
     bills.update({add_bill: cost})
-    file_name = "serial_bills.pickle"
-    with open(file_name, "wb") as bills2pay:
-        pickle.dump(bills, bills2pay)
-        print("These are your bills: ", bills)
+    save()
+    print("These are your bills: ", bills)
 
 
-# works unless it uses the pay method, it encounters a runtime error due
-# to the dictionary changing size during an iteration
-def delete(ans):
-    del bills[ans]
-    file_name = "serial_bills.pickle"
-    with open(file_name, "wb") as bills2pay:
-        pickle.dump(bills, bills2pay)
-        print("These are your bills: ", bills)
+# works unless it uses the pay method, it encounters a runtime error due...
+# ...to the dictionary changing size during an iteration
+def delete(name_of_bill):
+    try:
+        del bills[name_of_bill]
+        save()
+        print("These are your remaining bills: ", bills)
+    except KeyError:
+        print("Check your spelling please, bill does not exist.")
 
 
 # see delete() comment
-def pay(ans, current_balance):
+def pay(name_of_bill, current_balance):
     try:
+        # for every dictionary pair in bills dictionary:
         for item in bills:
-            if ans == item:
-                cost_of_bill = bills[ans]
+            # if the desired bill to pay is equal to the dictionary pair:
+            if name_of_bill == item:
+                # set c_o_b to equal the value of the desired bill
+                cost_of_bill = bills[name_of_bill]
+                # print the cost of the bill
                 print("Your bill costs: $%.2f" % cost_of_bill)
+                # subtract my current balance from what bill costs
                 current_balance -= cost_of_bill
-                print(current_balance)
-            else:
-                for item2 in bills:
-                    if ans == item2:
-                        cost_of_bill2 = bills[ans]
-                        if cost_of_bill2 >= 0:
-                            delete(ans)
-                            # add here print(cost_of_bill2)
-    except FileNotFoundError:
-        print("FileNotFoundError!")
+                # show me how much money I have left over
+                print("You will have this much remaining: $%.2f" % current_balance)
+                # if the cost is greater than or equal to 0
+                # # I really should change this, but it works because I don't actually change the value of...
+                # # ...cost_of_bill when I'm subtracting with it, so basically it finds the item in the dictionary...
+                # # ...sees that the item is still holding a value >= 0, and it deletes it.
+                if cost_of_bill >= 0:
+                    # remove the bill to be paid!
+                    delete(name_of_bill)
+    except RuntimeError:
+        print("Runtime error")  # A runtime error occurred.
 
-# reference for original structure
-# def pay(ans, current_balance):
-#     try:
-#         # # old code
-#         #
-#         # with open("serial_bills.pickle", "rb") as about2pay:
-#         #     bothFromDict = pickle.load(about2pay)
-#         #     print(bothFromDict)
-#         #     keyMaster = bothFromDict.keys()
-#         # # keyMaster is bills
-#             for item in bills:
-#                 if ans == item:
-#                     cost_of_bill = bills[ans]
-#                     print("Your bill costs: $%.2f" % cost_of_bill)
-#                     # make this a nested function (rm bill():?) #
-#                     # ans2 = float(input("How much can you pay?\n"))
-#                     # paid_bill = cost_of_bill - ans2
-#                     current_balance -= 50
-#                     # what to do if neg num?
-#                     if current_balance <= 0:
-#                         # good effect but did not work
-#                         delete(ans)
-#                         # encounters runtime error due to dictionary change in size
-#                         # # bills was bothFromDict
-#                         # bills.pop(ans)
-#                     elif current_balance >= 0:
-#                         print(current_balance)
-#                 else:
-#                     print('this')
-#     except FileNotFoundError:
-#         print("whoops")
+
+def zero_out(current_balance):
+    total = 0
+    subtract_all_these = bills.values()
+    for item in subtract_all_these:
+        total += item
+    current_balance -= total
+    print("You will have $%.2f" % current_balance, "after all bills are paid.")
+    start_over()
 
 
 def view():
@@ -101,20 +90,23 @@ def start_over():
 
 def main():
     # print("This is your current balance: $%.2f" % currentBalance)
-    teller = input("Would you like to add a new bill, pay an existing, delete, or view your bills?\n")
+    teller = input("Would you like to add a new bill, pay an existing, zero-out, delete, or view your bills?\n"
+                   "(Type 'a' to add, 'p' to pay, 'z' to zero-out, 'd' to delete, or 'v' to view your bills)\n")
     if teller.upper() == "A":
         add_bill = input("What bill do you need to add?\n")
         cost = float(input("How much is due?\n"))
         add(add_bill, cost)
         start_over()
     elif teller.upper() == "P":
-        ans = input("What bill do you want to pay?\n")
-        pay(ans, current_balance)
+        name_of_bill = input("What bill do you want to pay?\n")
+        pay(name_of_bill, current_balance)
         start_over()
     elif teller.upper() == "D":
-        ans = input("What bill do you want to delete?\n")
-        delete(ans)
+        name_of_bill = input("What bill do you want to delete?\n")
+        delete(name_of_bill)
         start_over()
+    elif teller.upper() == "Z":
+        zero_out(current_balance)
     else:
         print("This is your current balance: $%.2f" % current_balance)
         print("And these are your bills:")
@@ -131,7 +123,7 @@ main()
 # TODO: figure out how to pay bills in dict w/out errors
 
 <SHORT TERM GOALS>
-# TODO: make program subtract all dict values from current_balance at once to predict finances for the month
+# TODO: make a function that clears the dictionary all at once
 
 <LONG TERM GOALS>
 # TODO: possibly add a dictionary for paid_bills = {}?
@@ -140,6 +132,9 @@ main()
 # TODO: incorporate a calendar
 
 <BUGS>
+# if I pay a bill, current_balance is a global variable, it does not carry the subtracted value over...
+# ...if I chooses to start_over(). (if you have $1000 and you pay a $200 bill, you have $800 left over...
+# ...however choose to start_over() and you have $1000 all over again.)
 # If someone doesn't enter info to add a bill, handle the ValueError
 # If someone doesn't enter a bill to delete, handle the KeyError...
 # ...(Pay seems to have no effect when field is empty)
