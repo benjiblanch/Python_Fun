@@ -19,22 +19,19 @@ def save():
         pickle.dump(bills, bills2pay)
 
 
+def start_over():
+    cont = input("Start over?\n")
+    if cont.lower() == 'y':
+        main()
+    else:
+        print("Have a great day!")
+
+
 # I cannot add a bill, but it does rewrite whats in the dictionary
 def add(add_bill, cost):
     bills.update({add_bill: cost})
     save()
     print("These are your bills: ", bills)
-
-
-# works unless it uses the pay method, it encounters a runtime error due...
-# ...to the dictionary changing size during an iteration
-def delete(name_of_bill):
-    try:
-        del bills[name_of_bill]
-        save()
-        print("These are your remaining bills: ", bills)
-    except KeyError:
-        print("Check your spelling please, bill does not exist.")
 
 
 # see delete() comment
@@ -73,6 +70,23 @@ def zero_out(current_balance):
     start_over()
 
 
+# works unless it uses the pay method, it encounters a runtime error due...
+# ...to the dictionary changing size during an iteration
+def delete(name_of_bill):
+    try:
+        del bills[name_of_bill]
+        save()
+        print("These are your remaining bills: ", bills)
+    except KeyError:
+        print("Check your spelling please, bill does not exist.")
+
+
+def clear():
+    bills.clear()
+    save()
+    print(bills)
+
+
 def view():
     try:
         print(bills)
@@ -80,18 +94,11 @@ def view():
         return {}
 
 
-def start_over():
-    cont = input("Start over?\n")
-    if cont.lower() == 'y':
-        main()
-    else:
-        print("Have a great day!")
-
-
 def main():
     # print("This is your current balance: $%.2f" % currentBalance)
-    teller = input("Would you like to add a new bill, pay an existing, zero-out, delete, or view your bills?\n"
-                   "(Type 'a' to add, 'p' to pay, 'z' to zero-out, 'd' to delete, or 'v' to view your bills)\n")
+    teller = input("Would you like to add a new bill, pay one, zero-out, delete one, clear all, or view your bills?\n"
+                   "(Type 'a' to add, 'p' to pay, 'z' to zero-out, 'd' to delete,"
+                   " 'c' to clear or 'v' to view)\n")
     if teller.upper() == "A":
         add_bill = input("What bill do you need to add?\n")
         cost = float(input("How much is due?\n"))
@@ -107,6 +114,9 @@ def main():
         start_over()
     elif teller.upper() == "Z":
         zero_out(current_balance)
+    elif teller.upper() == "C":
+        clear()
+        start_over()
     else:
         print("This is your current balance: $%.2f" % current_balance)
         print("And these are your bills:")
@@ -123,6 +133,8 @@ main()
 # TODO: figure out how to pay bills in dict w/out errors
 
 <SHORT TERM GOALS>
+# TODO: fix start over so that I'm not constantly starting from the beginning of the program every time...
+# ...just remember that you have a global variable that holds your "current balance"
 # TODO: make a function that clears the dictionary all at once
 
 <LONG TERM GOALS>
@@ -133,7 +145,7 @@ main()
 
 <BUGS>
 # if I pay a bill, current_balance is a global variable, it does not carry the subtracted value over...
-# ...if I chooses to start_over(). (if you have $1000 and you pay a $200 bill, you have $800 left over...
+# ...if I choose to start_over(). (if you have $1000 and you pay a $200 bill, you have $800 left over...
 # ...however choose to start_over() and you have $1000 all over again.)
 # If someone doesn't enter info to add a bill, handle the ValueError
 # If someone doesn't enter a bill to delete, handle the KeyError...
